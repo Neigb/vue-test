@@ -110,7 +110,6 @@ export default {
                 this.loadedNum = 0;
                 this.loadedData = [];
                 this.loadMore();
-                // const target = this.$el.querySelector('el-table__header-wrapper');
                 document.scrollingElement?.scrollIntoView(true);
                 this.$nextTick(() => {
                     this.addObserver();
