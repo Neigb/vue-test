@@ -1,16 +1,26 @@
 <template>
   <div class="hello">
-    <el-button @click="changeAdType()">模拟变化</el-button>
-    <el-table :data="tableData">
-      <el-table-column label="日期" prop="date" width="165" fixed>
+    <el-button @click="changeAdType()">模拟列变化</el-button>
+    <el-button @click="changeDataValue()">模拟数据变化</el-button>
+    <!-- <tooltip-column tooltip="123456" label="标题">5566</tooltip-column> -->
+    <el-table v-lazy-load="tableData" :data="tableData" @sort-change="sortByServer">
+      <base-money-column label="新增成本" prop="new_cost" width="80" />
+      <num-col label="数字" prop="date" width="100" sortable="custom" />
+      <money-column label="当前花费" prop="cost" width="100" :fen="100" dec="2" sortable="custom">
+        <template #default="{ row }">
+          {{ row.cost }}
+        </template>
+      </money-column>
+      <tooltip-column label="tooltip" tooltip="tooltip" prop="date" width="90" />
+      <!-- <el-table-column label="日期" prop="date" width="165" fixed>
         <template #default="{row}">
               <div v-if="row.date">
                 <span>{{ row.date }}</span>
               </div>
               <div v-else>汇总</div>
-          </template>
+        </template>
       </el-table-column>
-      <el-table-column label="支出" prop="cost" width="120" fixed />
+      <el-table-column label="支出" prop="cost" width="120" fixed sortable="custom" />
       <el-table-column label="新增成本" prop="new_cost" width="80" fixed />
       <el-table-column label="活跃成本" prop="active_cost" width="80" fixed />
       <el-table-column label="新增首日收入成分" align="center">
@@ -25,21 +35,22 @@
               <p v-else class="tar">--</p>
             </template>
           </el-table-column>
-      </el-table-column>
+      </el-table-column> -->
       <template v-for="(label, key) in ad_types">
-          <el-table-column
+          <tooltip-column
             :label="label"
             :key="key"
+            tooltip="修改好了"
             :prop="key"
             align="center">
-            <!-- <tooltip-column label="IPU" width="60" :prop="`${key}_IPU`" :sortable="false" align="right" :tooltip="`IPU = ${ad_types[key]}播放次数 / 活跃用户`">
+            <el-table-column label="IPU" width="60" :prop="`${key}_IPU`" :sortable="false" align="right" :tooltip="`IPU = ${ad_types[key]}播放次数 / 活跃用户`">
               <template #default="{row}">
-                <p v-if="log(row) && row.active_users && row[`adtype_${key}_display_pv`] !== undefined">
+                <p v-if="row.active_users && row[`adtype_${key}_display_pv`] !== undefined">
                   {{ row[`adtype_${key}_display_pv`] / row.active_users }}
                 </p>
-                <p v-if="log(row)">--</p>
+                <p v-else>--</p>
               </template>
-            </tooltip-column> -->
+            </el-table-column>
             <tooltip-column label="CPM" width="70" :prop="`${key}_CPM`" :sortable="false" align="right" :tooltip="`CPM = ${ad_types[key]}收入 / 曝光数 * 1000`">
               <template #default="{row}">
                 <p v-if="row[`adtype_${key}_display_pv`]">
@@ -49,7 +60,7 @@
                 <p v-else>--</p>
               </template>
             </tooltip-column>
-          </el-table-column>
+          </tooltip-column>
       </template>
     </el-table>
   </div>
@@ -57,10 +68,13 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import TooltipColumn from './TooltipColumn.vue';
+import BaseMoneyColumn from './BaseMoneyColumn.vue';
+import MoneyColumn from './MoneyColumn.vue';
+import NumCol from './NumCol.vue';
+import TooltipColumn from './TooltipColumn';
 
 @Component({
-  components: { TooltipColumn }
+  components: { TooltipColumn, NumCol, MoneyColumn, BaseMoneyColumn }
 })
 export default class HelloWorld extends Vue {
   public count = 0;
@@ -801,10 +815,6 @@ export default class HelloWorld extends Vue {
     "reward_video": "激励视频",
     "banner": "Banner",
     "interstitial": "插屏广告",
-    "splash": "开屏广告",
-    "native": "原生广告",
-    "native_recommend": "原生_互推广告",
-    "native_floating": "原生_浮层广告",
     "box": "盒子广告",
     "building_block": "积木广告",
     "loading": "loading 广告"
@@ -832,13 +842,19 @@ export default class HelloWorld extends Vue {
     }
   }
 
-  log(msg: any) {
-    // console.log(msg);
-    return true;
+  changeDataValue() {
+    this.tableData.reverse();
   }
 
-  mounted() {
-    console.log(this.$slots);
+  sortByServer(column: any) {
+    console.log(1)
+    let order: string | null = null;
+    if (column.order === 'ascending') {
+      order = '';
+    } else if (column.order === 'descending') {
+      order = '-';
+    }
+    console.log('sort');
   }
 }
 </script>
@@ -861,5 +877,8 @@ li {
 }
 a {
   color: #42b983;
+}
+::v-deep .el-button {
+  padding: 10px !important;
 }
 </style>
